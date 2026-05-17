@@ -2919,7 +2919,14 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 					-- task.wait() -- TODO Maybe remove?
 				end
 
-				local ok, result = run_with_loading("Decompiling " .. script.Name, true, nil, decomp, script)
+				scriptsDecompiledCount = scriptsDecompiledCount + 1
+                local percentage = 0
+                if totalScriptsToDecompile > 0 then
+                    percentage = math.floor((scriptsDecompiledCount / totalScriptsToDecompile) * 100)
+                end
+
+                local progressText = "Decompiling " .. script.Name .. " [" .. percentage .. "% | " .. scriptsDecompiledCount .. "/" .. totalScriptsToDecompile .. "]"
+                local ok, result = run_with_loading(progressText, true, nil, decomp, script)
 				if not result then
 					ok, result = false, "Empty Output"
 				end
@@ -3608,7 +3615,18 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 			end
 		end
 
-		-- TODO Find a better solution for this
+-- TODO Find a better solution for this
+        local totalScriptsToDecompile = 0
+        local scriptsDecompiledCount = 0
+
+        -- Quick pre-scan of the game to count scripts
+        for _, instance in pairs(ToSaveList) do
+            for _, desc in pairs(instance:GetDescendants()) do
+                if desc:IsA("LocalScript") or desc:IsA("ModuleScript") then
+                    totalScriptsToDecompile = totalScriptsToDecompile + 1
+                end
+            end
+        end
 		SaveNotCreatableWillBeEnabled = SaveNotCreatable
 			or (IsolateLocalPlayer or IsolateLocalPlayerCharacter) and IsolateLocalPlayer
 			or IsolatePlayers
